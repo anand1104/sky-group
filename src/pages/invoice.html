@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SKY GROUP</title>
+    <link rel="stylesheet" href="billing-style.css">
+
+</head>
+
+<body>
+    <div class="container">
+        <h1 class="no-print">SKY GROUP</h1>
+
+        <div class="no-print">
+            <h2>Customer Information</h2>
+            <div class="form-group">
+                <label for="customerName">Name:</label>
+                <input type="text" id="customerName" placeholder="Enter customer name">
+            </div>
+            <div class="form-group">
+                <label for="mobile">Mobile:</label>
+                <input type="text" id="mobile" placeholder="Enter mobile number">
+            </div>
+            <div class="form-group">
+                <label for="address">Address:</label>
+                <input type="text" id="address" placeholder="Enter customer address">
+            </div>
+
+            <h2>Plot Information</h2>
+            <div class="form-group">
+                <label for="plotNo">Plot No.:</label>
+                <select id="plotNo" onchange="updatePlotDetails()">
+                    <option value="">Select Plot</option>
+                    <!-- Options will be populated from JavaScript -->
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="area">Area (sq.ft.):</label>
+                <input type="text" id="area" placeholder="Enter area" readonly>
+            </div>
+            <div class="form-group">
+                <label for="plc">PLC (%):</label>
+                <input type="text" id="plc" placeholder="Enter PLC" readonly>
+            </div>
+
+            <h2>Payment Information</h2>
+            <div class="form-group">
+                <label for="amount">Amount (₹):</label>
+                <input type="number" id="amount" placeholder="Enter amount">
+            </div>
+            <div class="form-group">
+                <label for="paymentMode">Mode of Payment:</label>
+                <select id="paymentMode">
+                    <option value="Cash">Cash</option>
+                    <option value="Cheque">Cheque</option>
+                    <option value="DD">Demand Draft (DD)</option>
+                    <option value="RTGS" selected>RTGS/NEFT</option>
+                    <option value="UPI">UPI</option>
+                    <option value="Card">Credit/Debit Card</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="paymentDetails">Payment Details (Cheque/DD/Ref No.):</label>
+                <input type="text" id="paymentDetails" placeholder="Enter payment details">
+            </div>
+            <div class="form-group">
+                <label for="date">Date:</label>
+                <input type="date" id="date">
+            </div>
+
+            <button onclick="generateInvoice()">Generate Invoice</button>
+            <button onclick="printInvoice()" style="background-color: #2196F3; margin-left: 10px;">Print
+                Invoice</button>
+        </div>
+
+        <div id="invoicePreview" class="invoice-preview">
+            <div class="invoice-header">
+                <div class="logo">
+                    <img src="../assets/img/logo.png" alt="SkyGroup Logo" style="height: 80px;width:80px ;">
+                </div>
+                <div class="company-info">
+                    <div class="invoice-title">RECEIPT</div>
+                    <div>
+                        SKY GROUP REAL ESTATE DEVELOPER PRIVATE LIMITED<br>
+                        A 5/470, Gomti Nagar Extension, Lucknow, Uttar Pradesh - 226010<br>
+                        Email ID: info@skygrouprealestate.com Web: www.skygrouprealestate.com
+                    </div>
+                </div>
+            </div>
+
+            <div class="invoice-details">
+                <div><strong>DATE:</strong> <span id="invoiceDate">30/12/2023</span></div>
+                <div><strong>RECEIPT NO.:</strong> <span id="invoiceReceiptNo">SKGP-2025-001</span>
+                    <!--*auto generated*-->
+                </div>
+            </div>
+
+            <div class="customer-info">
+                <div><strong>NAME:</strong> <span id="invoiceCustomerName"></span></div>
+                <div><strong>MOBILE:</strong> <span id="invoiceMobile"></span></div>
+                <div><strong>ADDRESS:</strong> <span id="invoiceAddress"></span></div>
+            </div>
+
+            <div class="plot-details">
+                <div><strong>PLOT NO.:</strong> <span id="invoicePlotNo"></span></div>
+                <div><strong>AREA:</strong> <span id="invoiceArea">0</span> sq.ft.</div>
+                <div><strong>PLC:</strong> <span id="invoicePlc">0</span>%</div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>DESCRIPTION</th>
+                        <th>AMOUNT</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td id="invoiceDescription"></td>
+                        <td id="invoiceAmount"></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Total Amount:</strong></td>
+                        <td><strong id="invoiceTotalAmount"></strong></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="amount-in-words">
+                <strong>Amount [In Words]</strong><br>
+                <span id="invoiceAmountWords"></span>
+            </div>
+
+            <div>
+                <strong>Mode Of Payment:</strong> <span id="invoicePaymentMode"></span>
+            </div>
+
+            <div class="footer">
+                <div><strong>NOTE-</strong></div>
+                <div>Cheques And Demand Draft Are Subject To Realisation.</div>
+            </div>
+
+            <div class="signature">
+                <div>For, Sky Group Real Estate Developers Pvt. Ltd.</div>
+                <br><br>
+                <div>_________________________</div>
+                <div>[Authorized Signatory]</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulated database of plots
+        const plotsDatabase = [
+            { plotNo: "A101 @ Rajdhani Picnic City", area: "1200", plc: "0" },
+            { plotNo: "A102 @ Rajdhani Picnic City", area: "1250", plc: "0" },
+            { plotNo: "A103 @ Rajdhani Picnic City", area: "1300", plc: "0" },
+            { plotNo: "A104 @ Rajdhani Picnic City", area: "1350", plc: "0" },
+            { plotNo: "A105 @ Rajdhani Picnic City", area: "1400", plc: "0" },
+            { plotNo: "A106 @ Rajdhani Picnic City", area: "1450", plc: "0" },
+            { plotNo: "A107 @ Rajdhani Picnic City", area: "1500", plc: "0" },
+            { plotNo: "A108 @ Rajdhani Picnic City", area: "1250", plc: "0" },
+            { plotNo: "B201 @ Rajdhani Picnic City", area: "1600", plc: "5" },
+            { plotNo: "B202 @ Rajdhani Picnic City", area: "1650", plc: "5" }
+        ];
+
+        // Initialize the plots dropdown
+        function initializePlotsDropdown() {
+            const plotSelect = document.getElementById('plotNo');
+            plotsDatabase.forEach(plot => {
+                const option = document.createElement('option');
+                option.value = plot.plotNo;
+                option.textContent = plot.plotNo;
+                plotSelect.appendChild(option);
+            });
+        }
+
+        // Update plot details when a plot is selected
+        function updatePlotDetails() {
+            const plotNo = document.getElementById('plotNo').value;
+            const plot = plotsDatabase.find(p => p.plotNo === plotNo);
+            if (plot) {
+                document.getElementById('area').value = plot.area;
+                document.getElementById('plc').value = plot.plc;
+            } else {
+                document.getElementById('area').value = '';
+                document.getElementById('plc').value = '';
+            }
+        }
+
+        // Generate a receipt number (format: RJPC-YYYY-NNN)
+        function generateReceiptNumber() {
+            const now = new Date();
+            const year = now.getFullYear();
+            // In a real application, you would get the next number from a database
+            const nextNumber = Math.floor(Math.random() * 900) + 100; // Random 3-digit number for demo
+            return `SKGP-${year}-${String(nextNumber).padStart(3, '0')}`;
+        }
+
+        // Set default date to today
+        document.getElementById('date').valueAsDate = new Date();
+
+        // Initialize the form
+        window.onload = function () {
+            initializePlotsDropdown();
+            document.getElementById('paymentDetails').value = '000';
+        };
+
+        function generateInvoice() {
+            // Get form values
+            const customerName = document.getElementById('customerName').value || '';
+            const mobile = document.getElementById('mobile').value || '';
+            const address = document.getElementById('address').value || '';
+            const plotNo = document.getElementById('plotNo').value || '0';
+            const area = document.getElementById('area').value || '0';
+            const plc = document.getElementById('plc').value || '0';
+            const amount = document.getElementById('amount').value || '0';
+            const paymentMode = document.getElementById('paymentMode').value || '';
+            const paymentDetails = document.getElementById('paymentDetails').value || '';
+            const receiptNo = generateReceiptNumber();
+
+            // Format date
+            const dateInput = document.getElementById('date').value;
+            const dateObj = dateInput ? new Date(dateInput) : new Date();
+            const day = String(dateObj.getDate()).padStart(2, '0');
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const year = dateObj.getFullYear();
+            const formattedDate = `${day}/${month}/${year}`;
+
+            // Update invoice preview
+            document.getElementById('invoiceCustomerName').textContent = customerName.toUpperCase();
+            document.getElementById('invoiceMobile').textContent = mobile;
+            document.getElementById('invoiceAddress').textContent = address.toUpperCase();
+            document.getElementById('invoicePlotNo').textContent = plotNo;
+            document.getElementById('invoiceArea').textContent = area;
+            document.getElementById('invoicePlc').textContent = plc;
+            document.getElementById('invoiceAmount').textContent = `Rs.${amount}/-`;
+            document.getElementById('invoiceTotalAmount').textContent = `Rs.${amount}/-`;
+            document.getElementById('invoicePaymentMode').textContent = `${paymentMode}-${paymentDetails}`;
+            document.getElementById('invoiceReceiptNo').textContent = receiptNo;
+            document.getElementById('invoiceDate').textContent = formattedDate;
+            document.getElementById('invoiceDescription').textContent = `In Favour Of Plot No.${plotNo}`;
+
+            // Convert amount to words
+            document.getElementById('invoiceAmountWords').textContent = numberToWords(amount) + ' Only';
+
+            // Show the invoice preview
+            document.getElementById('invoicePreview').style.display = 'block';
+        }
+
+        function printInvoice() {
+            if (document.getElementById('invoicePreview').style.display !== 'block') {
+                generateInvoice();
+            }
+            window.print();
+        }
+
+        // Function to convert numbers to words
+        function numberToWords(num) {
+            const single = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+            const double = ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+            const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+            const formatTenth = (digit, prev) => {
+                return 0 == digit ? '' : ' ' + (1 == digit ? double[prev] : tens[digit]);
+            };
+            const formatOther = (digit, next, denom) => {
+                return (0 != digit && 1 != next ? ' ' + single[digit] : '') + (0 != next || digit > 0 ? ' ' + denom : '');
+            };
+
+            let str = '';
+            num = parseInt(num, 10);
+            if (isNaN(num)) return '';
+            if (0 === num) return 'Zero';
+
+            // Handle thousands
+            const thousands = Math.floor(num / 1000);
+            if (thousands > 0) {
+                str += numberToWords(thousands) + ' Thousand';
+                num = num % 1000;
+                if (num > 0) str += ' ';
+            }
+
+            // Handle hundreds
+            const hundreds = Math.floor(num / 100);
+            if (hundreds > 0) {
+                str += single[hundreds] + ' Hundred';
+                num = num % 100;
+                if (num > 0) str += ' ';
+            }
+
+            // Handle tens and units
+            if (num > 0) {
+                if (num < 20) {
+                    str += single[num];
+                } else {
+                    const ten = Math.floor(num / 10);
+                    const unit = num % 10;
+                    str += tens[ten];
+                    if (unit > 0) {
+                        str += ' ' + single[unit];
+                    }
+                }
+            }
+
+            return 'Rupees ' + str.trim() + (num === 1 ? ' Rupee' : '');
+        }
+    </script>
+</body>
+
+</html>
